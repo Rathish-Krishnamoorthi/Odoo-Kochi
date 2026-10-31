@@ -1,45 +1,21 @@
-version: '3.9'
-
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: brightloop-mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: brightloop
-    volumes:
-      - mongodb_data:/data/db
-
   backend:
     build:
       context: ./backend
-    container_name: brightloop-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
-    environment:
-      MONGODB_URI: mongodb://mongodb:27017/brightloop
-      JWT_SECRET_KEY: dev-secret-key-change-me
-      JWT_ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 30
-      REFRESH_TOKEN_EXPIRE_DAYS: 7
-    depends_on:
-      - mongodb
+    env_file:
+      - ./backend/.env
 
   frontend:
     build:
       context: ./frontend
       target: dev
-    container_name: brightloop-frontend
     restart: unless-stopped
     ports:
       - "5173:5173"
     environment:
-      VITE_API_BASE_URL: http://localhost:8000
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
     depends_on:
       - backend
-
-volumes:
-  mongodb_data:

@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 def validate_password_strength(password: str) -> None:
@@ -32,14 +32,14 @@ def verify_password(password: str, hashed: str) -> bool:
 
 
 def create_access_token(subject: str, expires_minutes: int | None = None) -> str:
-    expires = timedelta(minutes=expires_minutes or settings.access_token_expire_minutes)
+    expires = timedelta(minutes=expires_minutes if expires_minutes is not None else settings.access_token_expire_minutes)
     expire = datetime.now(timezone.utc) + expires
     payload = {"sub": subject, "exp": expire}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
 def create_refresh_token(subject: str, expires_days: int | None = None) -> str:
-    expires = timedelta(days=expires_days or settings.refresh_token_expire_days)
+    expires = timedelta(days=expires_days if expires_days is not None else settings.refresh_token_expire_days)
     expire = datetime.now(timezone.utc) + expires
     payload = {"sub": subject, "type": "refresh", "exp": expire}
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)

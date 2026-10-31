@@ -1,22 +1,36 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { LoginPage } from './features/auth/LoginPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
+import { ReportsPage } from './features/dashboard/ReportsPage';
+import { ResourcePage } from './features/resources/ResourcePage';
+import { StaffPage } from './features/resources/StaffPage';
 
-function AppLayout() {
+function ProtectedApp() {
+  const { authenticated, user } = useAuth();
+  const location = useLocation();
+  if (!authenticated) return <LoginPage />;
+  const adminOnly = ['/discount-rules', '/tax-rules', '/audit-logs'];
+  const staffOnly = ['/customers', '/products', '/plans', '/quotations', '/reports'];
+  if (user?.role === 'customer' && [...adminOnly, ...staffOnly].includes(location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
+  if (user?.role === 'staff' && adminOnly.includes(location.pathname)) {
+    return <Navigate to="/" replace />;
+  }
   return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-800">
+    <div className="flex min-h-screen flex-col bg-slate-100 text-slate-800 lg:flex-row">
       <Sidebar />
-      <main className="flex-1">
+      <main className="min-w-0 flex-1">
         <Routes>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/customers" element={<div className="p-6 text-xl font-semibold">Customers module</div>} />
-          <Route path="/products" element={<div className="p-6 text-xl font-semibold">Products module</div>} />
-          <Route path="/subscriptions" element={<div className="p-6 text-xl font-semibold">Subscriptions module</div>} />
-          <Route path="/invoices" element={<div className="p-6 text-xl font-semibold">Invoices module</div>} />
-          <Route path="/reports" element={<div className="p-6 text-xl font-semibold">Reports module</div>} />
-          <Route path="/settings" element={<div className="p-6 text-xl font-semibold">Settings module</div>} />
+          {['customers', 'products', 'plans', 'quotations', 'subscriptions', 'invoices', 'payments', 'discount-rules', 'tax-rules', 'notifications', 'audit-logs'].map((resource) =>
+            <Route key={resource} path={`/${resource}`} element={<ResourcePage resource={resource} />} />,
+          )}
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/staff" element={<StaffPage />} />
+          <Route path="/settings" element={<Navigate to="/staff" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -25,11 +39,5 @@ function AppLayout() {
 }
 
 export default function App() {
-  const authenticated = true;
-
-  if (!authenticated) {
-    return <LoginPage />;
-  }
-
-  return <AppLayout />;
+  return <AuthProvider><ProtectedApp /></AuthProvider>;
 }

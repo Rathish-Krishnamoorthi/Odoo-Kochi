@@ -8,5 +8,4 @@ def build_dashboard_snapshot(customers: list, products: list, subscriptions: lis
         "products": len(products),
         "overdue_invoices": overdue_invoices,
         "total_revenue": total_revenue,
-        "mr": total_revenue,
     }
