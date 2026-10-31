@@ -1,0 +1,6 @@
+{
+  "name": "Brightloop - Subscription Management Platform",
+  "description": "Enterprise-grade subscription lifecycle management, recurring billing, quotations, automated invoices, payment allocation, and multi-role portal for Admin, Staff, and Customers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
